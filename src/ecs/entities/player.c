@@ -86,7 +86,7 @@ static void PlayerSpawnImpactParticles(Scene* scene, const usize entity, const f
                     .y = gravity,
                 };
 
-                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime));
+                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
             }
 
             // Right pocket.
@@ -110,7 +110,7 @@ static void PlayerSpawnImpactParticles(Scene* scene, const usize entity, const f
                     .y = gravity,
                 };
 
-                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime));
+                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
             }
         }
     }
@@ -156,7 +156,7 @@ static void PlayerSpawnImpactParticles(Scene* scene, const usize entity, const f
                     .y = gravity,
                 };
 
-                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime));
+                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
             }
             else
             {
@@ -179,7 +179,7 @@ static void PlayerSpawnImpactParticles(Scene* scene, const usize entity, const f
                     .y = gravity,
                 };
 
-                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime));
+                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
             }
         }
     }
@@ -233,7 +233,7 @@ static void PlayerSpawnJumpParticles(Scene* scene, const usize entity)
                     .y = gravity,
                 };
 
-                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime));
+                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
             }
 
             // Right pocket.
@@ -257,7 +257,7 @@ static void PlayerSpawnJumpParticles(Scene* scene, const usize entity)
                     .y = gravity,
                 };
 
-                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime));
+                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
             }
         }
     }
@@ -318,7 +318,7 @@ static void PlayerSpawnJumpParticles(Scene* scene, const usize entity)
                 .y = gravity,
             };
 
-            SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime));
+            SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
         }
     }
 }

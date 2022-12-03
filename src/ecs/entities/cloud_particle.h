@@ -9,7 +9,8 @@ EntityBuilder CloudParticleCreate
     f32 radius,
     Vector2 initialVelocity,
     Vector2 acceleration,
-    f32 lifetime
+    f32 lifetime,
+    Color color
 );
 
 void CloudParticleDraw(const Scene* scene, usize entity);

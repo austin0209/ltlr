@@ -36,7 +36,8 @@ EntityBuilder CloudParticleCreate
     const f32 radius,
     const Vector2 initialVelocity,
     const Vector2 acceleration,
-    const f32 lifetime
+    const f32 lifetime,
+    const Color color
 )
 {
     Deque components = DEQUE_OF(Component);
@@ -65,7 +66,7 @@ EntityBuilder CloudParticleCreate
 
     ADD_COMPONENT(CColor, ((CColor)
     {
-        .value = COLOR_WHITE,
+        .value = color,
     }));
 
     ADD_COMPONENT(CKinetic, ((CKinetic)
