@@ -573,6 +573,9 @@ static void SceneStart(Scene* self)
 
     PopulateLevel(self);
     PlantTrees(self);
+
+    const EntityBuilder solarBuilder = SolarPanelCreate(32, 32);
+    SceneDeferAddEntity(self, solarBuilder);
 }
 
 static void SceneReset(Scene* self)

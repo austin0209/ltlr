@@ -1,7 +1,6 @@
 #include "../../atlas.h"
 #include "solar_panel.h"
 #include "common.h"
-#include <raymath.h>
 
 EntityBuilder SolarPanelCreate(const f32 x, const f32 y)
 {

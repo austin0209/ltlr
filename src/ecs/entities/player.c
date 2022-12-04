@@ -86,7 +86,8 @@ static void PlayerSpawnImpactParticles(Scene* scene, const usize entity, const f
                     .y = gravity,
                 };
 
-                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
+                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime,
+                                    COLOR_WHITE));
             }
 
             // Right pocket.
@@ -110,7 +111,8 @@ static void PlayerSpawnImpactParticles(Scene* scene, const usize entity, const f
                     .y = gravity,
                 };
 
-                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
+                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime,
+                                    COLOR_WHITE));
             }
         }
     }
@@ -156,7 +158,8 @@ static void PlayerSpawnImpactParticles(Scene* scene, const usize entity, const f
                     .y = gravity,
                 };
 
-                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
+                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime,
+                                    COLOR_WHITE));
             }
             else
             {
@@ -179,7 +182,8 @@ static void PlayerSpawnImpactParticles(Scene* scene, const usize entity, const f
                     .y = gravity,
                 };
 
-                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
+                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime,
+                                    COLOR_WHITE));
             }
         }
     }
@@ -233,7 +237,8 @@ static void PlayerSpawnJumpParticles(Scene* scene, const usize entity)
                     .y = gravity,
                 };
 
-                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
+                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime,
+                                    COLOR_WHITE));
             }
 
             // Right pocket.
@@ -257,7 +262,8 @@ static void PlayerSpawnJumpParticles(Scene* scene, const usize entity)
                     .y = gravity,
                 };
 
-                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
+                SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime,
+                                    COLOR_WHITE));
             }
         }
     }
@@ -318,7 +324,8 @@ static void PlayerSpawnJumpParticles(Scene* scene, const usize entity)
                 .y = gravity,
             };
 
-            SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime, COLOR_WHITE));
+            SceneDeferAddEntity(scene, CloudParticleCreate(cloudPosition, radius, vo, ao, lifetime,
+                                COLOR_WHITE));
         }
     }
 }
@@ -367,7 +374,7 @@ static void PlayerOnCollision(const OnCollisionParams* params)
             SceneDeferDeallocateEntity(params->scene, params->otherEntity);
         }
 
-        if (ENTITY_HAS_DEPS(params->otherEntity, TAG_SOLAR_PANEL | TAG_SPRITE))
+        if (ENTITY_HAS_DEPS(params->otherEntity, TAG_SOLAR_PANEL | TAG_SPRITE | TAG_POSITION))
         {
             const Rectangle intramural = (Rectangle)
             {
@@ -387,6 +394,16 @@ static void PlayerOnCollision(const OnCollisionParams* params)
             const Command command = CommandCreateSetComponent(params->otherEntity, &component);
             SceneSubmitCommand(params->scene, command);
             SceneDeferDisableComponent(params->scene, params->otherEntity, TAG_SOLAR_PANEL);
+
+            const CPosition* position = &params->scene->components.positions[params->entity];
+
+            // Spawn fireworks
+            for (usize i = 0; i < 100; ++i)
+            {
+                // TODO(austin0209): Probably need to make a firework entity with more complex logic.
+                SceneDeferAddEntity(params->scene, CloudParticleCreate(position->value, 10, Vector2Create(10, 10),
+                                    VECTOR2_ZERO, 10, COLOR_RED));
+            }
         }
     }
 }
