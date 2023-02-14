@@ -941,7 +941,14 @@ void PlayerStompLogic(InputHandler* input, Player* player, CKinetic* kinetic)
 		case PLAYER_STOMP_STATE_STUCK_IN_GROUND: {
 			player->stompTimer += CTX_DT;
 
-			if (player->stompTimer >= STOMP_STUCK_DURATION)
+			float foo = 0;
+
+			if (InputHandlerPressing(input, "stomp"))
+			{
+				foo = STOMP_STUCK_DURATION;
+			}
+
+			if (player->stompTimer >= foo)
 			{
 				player->stompState = PLAYER_STOMP_STATE_SPRINGING;
 				player->stompTimer = 0;
@@ -957,6 +964,11 @@ void PlayerStompLogic(InputHandler* input, Player* player, CKinetic* kinetic)
 				player->jumping = true;
 				kinetic->velocity.y = -player->velocityLastFrame * 0.5;
 				kinetic->velocity.y = MAX(kinetic->velocity.y, maxVelocity);
+
+				if (!InputHandlerPressing(input, "stomp"))
+				{
+					kinetic->velocity.y = -250;
+				}
 			}
 
 			break;
