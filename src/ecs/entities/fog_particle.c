@@ -43,9 +43,10 @@ void FogParticleBuildHelper(Scene* scene, const FogParticleBuilder* builder)
 	};
 }
 
-void FogParticleBuild(Scene* scene, const void* params)
+void FogParticleBuild(Scene* scene, PageAllocatorID params)
 {
-	FogParticleBuildHelper(scene, params);
+	void* paramsData = PageAllocatorGet(&scene->pageAllocator, params);
+	FogParticleBuildHelper(scene, paramsData);
 }
 
 void FogParticleDraw(const Scene* scene, const usize entity)

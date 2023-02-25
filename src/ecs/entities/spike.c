@@ -81,7 +81,8 @@ void SpikeBuildHelper(Scene* scene, const SpikeBuilder* builder)
 	};
 }
 
-void SpikeBuild(Scene* scene, const void* params)
+void SpikeBuild(Scene* scene, PageAllocatorID params)
 {
-	SpikeBuildHelper(scene, params);
+	void* paramsData = PageAllocatorGet(&scene->pageAllocator, params);
+	SpikeBuildHelper(scene, paramsData);
 }

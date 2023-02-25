@@ -17,7 +17,7 @@
 typedef struct
 {
 	OnDefer fn;
-	void* params;
+	PageAllocatorID params;
 } SceneDeferParams;
 
 typedef struct
@@ -67,31 +67,31 @@ usize SceneAllocateEntity(Scene* self)
 	return next;
 }
 
-static void SceneDeallocateEntity(Scene* self, const void* params)
+static void SceneDeallocateEntity(Scene* self, const PageAllocatorID params)
 {
-	const DeallocateEntityParams* data = params;
+	const DeallocateEntityParams* data = PageAllocatorGet(&self->pageAllocator, params);
 
 	self->components.tags[data->entity] = TAG_NONE;
 	DequePushFront(&self->m_entityManager.m_recycledEntityIndices, &data->entity);
 }
 
-static void SceneEnableComponent(Scene* self, const void* params)
+static void SceneEnableComponent(Scene* self, const PageAllocatorID params)
 {
-	const EnableComponentParams* data = params;
+	const EnableComponentParams* data = PageAllocatorGet(&self->pageAllocator, params);
 
 	self->components.tags[data->entity] |= data->tag;
 }
 
-static void SceneDisableComponent(Scene* self, const void* params)
+static void SceneDisableComponent(Scene* self, const PageAllocatorID params)
 {
-	const DisableComponentParams* data = params;
+	const DisableComponentParams* data = PageAllocatorGet(&self->pageAllocator, params);
 
 	self->components.tags[data->entity] &= ~data->tag;
 }
 
-static void SceneSetTag(Scene* self, const void* params)
+static void SceneSetTag(Scene* self, const PageAllocatorID params)
 {
-	const SetTagParams* data = params;
+	const SetTagParams* data = PageAllocatorGet(&self->pageAllocator, params);
 
 	self->components.tags[data->entity] = data->tag;
 }
@@ -112,45 +112,49 @@ bool SceneEntityIs(const Scene* self, const usize entity, const EntityType type)
 		   && self->components.identifiers[entity].type == type;
 }
 
-void SceneDefer(Scene* self, const OnDefer fn, const void* params)
+void SceneDefer(Scene* self, const OnDefer fn, const PageAllocatorID params)
 {
-	const SceneDeferParams args = (SceneDeferParams) {
-		.fn = fn,
-		.params = (void*)params,
-	};
+    const SceneDeferParams args = (SceneDeferParams) {
+            .fn = fn,
+            .params = params,
+    };
 
-	DEQUE_PUSH_FRONT(&self->deferred, SceneDeferParams, args);
+    DEQUE_PUSH_FRONT(&self->deferred, SceneDeferParams, args);
 }
 
 void SceneDeferDeallocateEntity(Scene* self, const usize entity)
 {
-	DeallocateEntityParams* params = malloc(sizeof(DeallocateEntityParams));
-	params->entity = entity;
-	SceneDefer(self, SceneDeallocateEntity, params);
+	DeallocateEntityParams params;
+	params.entity = entity;
+	PageAllocatorID id = PageAllocatorWrite(&self->pageAllocator, &params, sizeof(DeallocateEntityParams));
+	SceneDefer(self, SceneDeallocateEntity, id);
 }
 
 void SceneDeferEnableTag(Scene* self, const usize entity, const u64 tag)
 {
-	EnableComponentParams* params = malloc(sizeof(EnableComponentParams));
-	params->entity = entity;
-	params->tag = tag;
-	SceneDefer(self, SceneEnableComponent, params);
+	EnableComponentParams params;
+	params.entity = entity;
+	params.tag = tag;
+	PageAllocatorID id = PageAllocatorWrite(&self->pageAllocator, &params, sizeof(EnableComponentParams));
+	SceneDefer(self, SceneEnableComponent, id);
 }
 
 void SceneDeferDisableTag(Scene* self, const usize entity, const u64 tag)
 {
-	DisableComponentParams* params = malloc(sizeof(DisableComponentParams));
-	params->entity = entity;
-	params->tag = tag;
-	SceneDefer(self, SceneDisableComponent, params);
+	DisableComponentParams params;
+	params.entity = entity;
+	params.tag = tag;
+	PageAllocatorID id = PageAllocatorWrite(&self->pageAllocator, &params, sizeof(DisableComponentParams));
+	SceneDefer(self, SceneDisableComponent, id);
 }
 
 void SceneDeferSetTag(Scene* self, const usize entity, const u64 tag)
 {
-	SetTagParams* params = malloc(sizeof(SetTagParams));
-	params->entity = entity;
-	params->tag = tag;
-	SceneDefer(self, SceneSetTag, params);
+	SetTagParams params;
+	params.entity = entity;
+	params.tag = tag;
+	PageAllocatorID id = PageAllocatorWrite(&self->pageAllocator, &params, sizeof(SetTagParams));
+	SceneDefer(self, SceneSetTag, id);
 }
 
 static void SceneFlush(Scene* self)
@@ -161,7 +165,7 @@ static void SceneFlush(Scene* self)
 
 		params->fn(self, params->params);
 
-		free(params->params);
+		PageAllocatorEvict(&self->pageAllocator, params->params);
 	}
 
 	DequeClear(&self->deferred);
@@ -523,36 +527,40 @@ static void ScenePopulateLevel(Scene* self)
 			.height = 16 * (2 + 4),
 		};
 
-		BlockBuilder* builder = malloc(sizeof(BlockBuilder));
-		builder->entity = SceneAllocateEntity(self);
-		builder->aabb = aabb;
-		builder->resolutionSchema = RESOLVE_ALL;
-		builder->layer = LAYER_TERRAIN;
-		SceneDefer(self, BlockBuild, builder);
+		BlockBuilder builder;
+		builder.entity = SceneAllocateEntity(self);
+		builder.aabb = aabb;
+		builder.resolutionSchema = RESOLVE_ALL;
+		builder.layer = LAYER_TERRAIN;
+		PageAllocatorID id = PageAllocatorWrite(&self->pageAllocator, &builder, sizeof(BlockBuilder));
+		SceneDefer(self, BlockBuild, id);
 	}
 
 	{
 		self->player = SceneAllocateEntity(self);
-		PlayerBuilder* builder = malloc(sizeof(PlayerBuilder));
-		builder->entity = self->player;
-		builder->handle = 0;
-		builder->x = 16 * 5;
-		builder->y = 16 * -4;
-		SceneDefer(self, PlayerBuild, builder);
+		PlayerBuilder builder;
+		builder.entity = self->player;
+		builder.handle = 0;
+		builder.x = 16 * 5;
+		builder.y = 16 * -4;
+		PageAllocatorID id = PageAllocatorWrite(&self->pageAllocator, &builder, sizeof(PlayerBuilder));
+		SceneDefer(self, PlayerBuild, id);
 	}
 
 	{
 		self->fog = SceneAllocateEntity(self);
-		FogBuilder* builder = malloc(sizeof(FogBuilder));
-		builder->entity = self->fog;
-		SceneDefer(self, FogBuild, builder);
+		FogBuilder builder;
+		builder.entity = self->fog;
+		PageAllocatorID id = PageAllocatorWrite(&self->pageAllocator, &builder, sizeof(FogBuilder));
+		SceneDefer(self, FogBuild, id);
 	}
 
 	{
 		self->lakitu = SceneAllocateEntity(self);
-		LakituBuilder* builder = malloc(sizeof(LakituBuilder));
-		builder->entity = self->lakitu;
-		SceneDefer(self, LakituBuild, builder);
+		LakituBuilder builder;
+		builder.entity = self->lakitu;
+		PageAllocatorID id = PageAllocatorWrite(&self->pageAllocator, &builder, sizeof(FogBuilder));
+		SceneDefer(self, LakituBuild, id);
 	}
 }
 
@@ -611,7 +619,7 @@ static void SceneResetEcs(Scene* self)
 		for (usize i = 0; i < DequeGetSize(&self->deferred); ++i)
 		{
 			SceneDeferParams* params = &DEQUE_GET_UNCHECKED(&self->deferred, SceneDeferParams, i);
-			free(params->params);
+			PageAllocatorEvict(&self->pageAllocator, params->params);
 		}
 
 		DequeClear(&self->deferred);
@@ -700,6 +708,8 @@ void SceneInit(Scene* self)
 	self->director = DIRECTOR_STATE_ENTRANCE;
 	self->fader = FaderDefault();
 	self->fader.easer.ease = EaseInOutQuad;
+
+	self->pageAllocator = PageAllocatorNew(128, 64);
 
 	SceneReset(self);
 }

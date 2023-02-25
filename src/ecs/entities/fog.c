@@ -84,9 +84,10 @@ void FogBuildHelper(Scene* scene, const FogBuilder* builder)
 	};
 }
 
-void FogBuild(Scene* scene, const void* params)
+void FogBuild(Scene* scene, PageAllocatorID params)
 {
-	FogBuildHelper(scene, params);
+	void* paramsData = PageAllocatorGet(&scene->pageAllocator, params);
+	FogBuildHelper(scene, paramsData);
 }
 
 static void SpawnMovingParticles(Scene* scene, const CPosition* position, const CKinetic* kinetic)
@@ -116,14 +117,14 @@ static void SpawnMovingParticles(Scene* scene, const CPosition* position, const 
 	const f32 radius = RngNextRange(&scene->rng, minSize, maxSize + 1);
 	const f32 lifetime = 0.1F * RngNextRange(&scene->rng, minLifetime, maxLifetime + 1);
 
-	FogParticleBuilder* builder = malloc(sizeof(FogParticleBuilder));
-	builder->entity = SceneAllocateEntity(scene);
-	builder->position = spawnPosition;
-	builder->velocity = velocity;
-	builder->radius = radius;
-	builder->lifetime = lifetime;
-
-	SceneDefer(scene, FogParticleBuild, builder);
+	FogParticleBuilder builder;
+	builder.entity = SceneAllocateEntity(scene);
+	builder.position = spawnPosition;
+	builder.velocity = velocity;
+	builder.radius = radius;
+	builder.lifetime = lifetime;
+	PageAllocatorID id = PageAllocatorWrite(&scene->pageAllocator, &builder, sizeof(FogParticleBuilder));
+	SceneDefer(scene, FogParticleBuild, id);
 }
 
 static void ShiftBreathingPhase()

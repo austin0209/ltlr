@@ -11,6 +11,6 @@ typedef struct
 	f32 lifetime;
 } FogParticleBuilder;
 
-void FogParticleBuild(Scene* scene, const void* params);
+void FogParticleBuild(Scene* scene, PageAllocatorID params);
 
 void FogParticleDraw(const Scene* scene, usize entity);

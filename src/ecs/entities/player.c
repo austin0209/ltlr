@@ -72,9 +72,10 @@ static void ShadowBuildHelper(Scene* scene, const ShadowBuilder* builder)
 	};
 }
 
-void ShadowBuild(Scene* scene, const void* params)
+void ShadowBuild(Scene* scene, PageAllocatorID params)
 {
-	ShadowBuildHelper(scene, params);
+	void* paramsData = PageAllocatorGet(&scene->pageAllocator, params);
+	ShadowBuildHelper(scene, paramsData);
 }
 
 static void PlayerStandstill(Player* player, CKinetic* kinetic)
@@ -116,14 +117,17 @@ static void SpawnCloudParticle(
 	const f32 lifetime
 )
 {
-	CloudParticleBuilder* builder = malloc(sizeof(CloudParticleBuilder));
-	builder->entity = SceneAllocateEntity(scene);
-	builder->position = position;
-	builder->radius = radius;
-	builder->initialVelocity = velocity;
-	builder->acceleration = acceleration;
-	builder->lifetime = lifetime;
-	SceneDefer(scene, CloudParticleBuild, builder);
+	CloudParticleBuilder builder;
+	builder.entity = SceneAllocateEntity(scene);
+	builder.position = position;
+	builder.radius = radius;
+	builder.initialVelocity = velocity;
+	builder.acceleration = acceleration;
+	builder.lifetime = lifetime;
+
+	PageAllocatorID temp = PageAllocatorWrite(&scene->pageAllocator, &builder, sizeof(CloudParticleBuilder));
+
+	SceneDefer(scene, CloudParticleBuild, temp);
 }
 
 static void PlayerSpawnImpactParticles(Scene* scene, const usize entity, const f32 groundY)
@@ -719,9 +723,10 @@ void PlayerBuildHelper(Scene* scene, const PlayerBuilder* builder)
 	};
 }
 
-void PlayerBuild(Scene* scene, const void* params)
+void PlayerBuild(Scene* scene, PageAllocatorID params)
 {
-	PlayerBuildHelper(scene, params);
+	void* paramsData = PageAllocatorGet(&scene->pageAllocator, params);
+	PlayerBuildHelper(scene, paramsData);
 }
 
 static void PlayerDecelerate(Player* player, const CKinetic* kinetic)
@@ -1447,13 +1452,14 @@ void PlayerTrailUpdate(Scene* scene, const usize entity)
 		{
 			const CAnimation* animation = &scene->components.animations[entity];
 
-			ShadowBuilder* builder = malloc(sizeof(ShadowBuilder));
-			builder->entity = SceneAllocateEntity(scene);
-			builder->x = smooth->previous.x;
-			builder->y = smooth->previous.y;
-			builder->sprite = ANIMATIONS[animation->type][animation->frame];
-			builder->reflection = animation->reflection;
-			SceneDefer(scene, ShadowBuild, builder);
+			ShadowBuilder builder;
+			builder.entity = SceneAllocateEntity(scene);
+			builder.x = smooth->previous.x;
+			builder.y = smooth->previous.y;
+			builder.sprite = ANIMATIONS[animation->type][animation->frame];
+			builder.reflection = animation->reflection;
+			PageAllocatorID id = PageAllocatorWrite(&scene->pageAllocator, &builder, sizeof(ShadowBuilder));
+			SceneDefer(scene, ShadowBuild, id);
 		}
 
 		player->trailTimer = 0;

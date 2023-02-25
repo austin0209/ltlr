@@ -76,9 +76,10 @@ static void CloudParticleBuildHelper(Scene* scene, const CloudParticleBuilder* b
 	};
 }
 
-void CloudParticleBuild(Scene* scene, const void* params)
+void CloudParticleBuild(Scene* scene, PageAllocatorID params)
 {
-	CloudParticleBuildHelper(scene, params);
+	void* paramsData = PageAllocatorGet(&scene->pageAllocator, params);
+	CloudParticleBuildHelper(scene, paramsData);
 }
 
 void CloudParticleDraw(const Scene* scene, const usize entity)

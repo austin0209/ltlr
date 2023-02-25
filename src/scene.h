@@ -2,6 +2,7 @@
 
 #include "./collections/deque.h"
 #include "./ecs/components.h"
+#include "./utils/page_allocator.h"
 #include "atlas.h"
 #include "common.h"
 #include "fader.h"
@@ -15,7 +16,7 @@
 #define MAX_SCORE_DIGITS (6 + 1)
 #define MAX_SCORE (999999)
 
-typedef void (*OnDefer)(Scene*, const void*);
+typedef void (*OnDefer)(Scene*, PageAllocatorID);
 
 typedef enum
 {
@@ -101,6 +102,7 @@ struct Scene
 	Deque deferred;
 	f64 elapsedTime;
 	Rng rng;
+	PageAllocator pageAllocator;
 };
 
 void SceneInit(Scene* self);
@@ -116,7 +118,7 @@ void SceneIncrementScore(Scene* self, u32 value);
 void SceneCollectBattery(Scene* self);
 void SceneConsumeBattery(Scene* self);
 
-void SceneDefer(Scene* self, OnDefer fn, const void* params);
+void SceneDefer(Scene* self, OnDefer fn, const PageAllocatorID params);
 void SceneDeferDeallocateEntity(Scene* self, usize entity);
 void SceneDeferEnableTag(Scene* self, usize entity, u64 tag);
 void SceneDeferDisableTag(Scene* self, usize entity, u64 tag);

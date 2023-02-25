@@ -34,7 +34,8 @@ void LakituBuildHelper(Scene* scene, const LakituBuilder* builder)
 	};
 }
 
-void LakituBuild(Scene* scene, const void* params)
+void LakituBuild(Scene* scene, PageAllocatorID params)
 {
-	LakituBuildHelper(scene, params);
+	void* paramsData = PageAllocatorGet(&scene->pageAllocator, params);
+	LakituBuildHelper(scene, paramsData);
 }

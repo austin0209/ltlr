@@ -38,7 +38,8 @@ void BlockBuildHelper(Scene* scene, const BlockBuilder* builder)
 	};
 }
 
-void BlockBuild(Scene* scene, const void* params)
+void BlockBuild(Scene* scene, PageAllocatorID params)
 {
-	BlockBuildHelper(scene, params);
+	void* paramsData = PageAllocatorGet(&scene->pageAllocator, params);
+	BlockBuildHelper(scene, paramsData);
 }

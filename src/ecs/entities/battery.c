@@ -64,9 +64,10 @@ static void BatteryBuildHelper(Scene* scene, const BatteryBuilder* builder)
 	};
 }
 
-void BatteryBuild(Scene* scene, const void* params)
+void BatteryBuild(Scene* scene, const PageAllocatorID params)
 {
-	BatteryBuildHelper(scene, params);
+	void* paramsData = PageAllocatorGet(&scene->pageAllocator, params);
+	BatteryBuildHelper(scene, paramsData);
 }
 
 void BatteryUpdate(Scene* scene, const usize entity)

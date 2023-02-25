@@ -9,4 +9,4 @@ typedef struct
 	f32 y;
 } SolarPanelBuilder;
 
-void SolarPanelBuild(Scene* scene, const void* params);
+void SolarPanelBuild(Scene* scene, PageAllocatorID params);

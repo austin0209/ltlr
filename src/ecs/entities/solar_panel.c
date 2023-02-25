@@ -47,7 +47,8 @@ void SolarPanelBuildHelper(Scene* scene, const SolarPanelBuilder* builder)
 	};
 }
 
-void SolarPanelBuild(Scene* scene, const void* params)
+void SolarPanelBuild(Scene* scene, PageAllocatorID params)
 {
-	SolarPanelBuildHelper(scene, params);
+	void* paramsData = PageAllocatorGet(&scene->pageAllocator, params);
+	SolarPanelBuildHelper(scene, paramsData);
 }

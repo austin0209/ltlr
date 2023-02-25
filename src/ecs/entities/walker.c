@@ -99,7 +99,8 @@ void WalkerBuildHelper(Scene* scene, const WalkerBuilder* builder)
 	};
 }
 
-void WalkerBuild(Scene* scene, const void* params)
+void WalkerBuild(Scene* scene, PageAllocatorID params)
 {
-	WalkerBuildHelper(scene, params);
+	void* paramsData = PageAllocatorGet(&scene->pageAllocator, params);
+	WalkerBuildHelper(scene, paramsData);
 }

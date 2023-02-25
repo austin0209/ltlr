@@ -7,4 +7,4 @@ typedef struct
 	usize entity;
 } LakituBuilder;
 
-void LakituBuild(Scene* scene, const void* params);
+void LakituBuild(Scene* scene, PageAllocatorID params);
